@@ -50,7 +50,7 @@ void runClock(int clockCycles) {
 
         if(t==timeToSend) {
 
-            sendTasks(1, t);
+            sendTasks(rand()%10, t);
 
         } else if(t > timeToSend) {
             timeToSend = t + rand()%10;
