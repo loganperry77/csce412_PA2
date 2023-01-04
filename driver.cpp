@@ -4,3 +4,17 @@
 
 // recieve a log from the webserver that reports when the request is done
 
+
+#include <pthread.h>
+#include <mutex.h>
+#include "loadbalancer.h"
+#include "request.h"
+
+int main() {
+
+    return 0;
+}
+
+void handleSingleThread() {
+
+}
