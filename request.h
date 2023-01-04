@@ -5,10 +5,30 @@
 
 #include <string>
 
-struct request {
+using namespace std;
+
+class request {
+    private:
+
+    public:
+
     string IPin;
     string IPout;
+
     int timeToRun;
+
+    int timeMade;
+    int timeDone;
+
+    request() {
+        
+    }
+
+    request(string ip, int runTime, int tM) {
+        IPin = ip;
+        timeToRun = runTime;
+        timeMade = tM;
+    }
 };
 
 #endif

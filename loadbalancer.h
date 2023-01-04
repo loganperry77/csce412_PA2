@@ -9,9 +9,19 @@
 #include <deque>
 #include "request.h"
 
+using namespace std;
+
 class loadbalancer {
-    
+
+    private:
+
     deque<request> requests;
+
+    public:
+
+    loadbalancer() {
+        
+    }
     
     int size() {
         return requests.size();
@@ -22,11 +32,9 @@ class loadbalancer {
     }
 
     request popRequest() {
-        if(requests.size()==0) {
-            return NULL;
-        } else {
-            return requests.pop_front();
-        }
+        request r = requests.front();
+        requests.pop_front();
+        return r;
     }
 
 };
