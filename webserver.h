@@ -33,15 +33,19 @@ class webserver {
         currentTask = r;
     }
 
-    bool checkStatus(int t) {
+    request getCT() {
+        return currentTask;
+    }
+
+    int checkStatus(int t) {
         if(t==endTime) {
             cout << "Task completed -> " << currentTask.IPin << " at server " << name() << ", latency ratio = " << (t-currentTask.timeMade)/currentTask.timeToRun << endl;
-            return false;
+            return 0;
         }
         if(t<endTime) {
-            return true;
+            return 1;
         } else {
-            return false;
+            return 2;
         }
     }
 

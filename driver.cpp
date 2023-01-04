@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include <random>
+#include <unistd.h>
 
 using namespace std;
 
@@ -15,7 +16,7 @@ loadbalancer lb;
 
 int t = 0;
 
-vector<string> IPList;
+vector<int> latencies;
 
 string generateUniqueIP() {
     // 255.255.255.255
@@ -31,14 +32,14 @@ string generateUniqueIP() {
 
 void sendTasks(int i) {
     for(int x = 0;x<i;x++) {
-        request r(generateUniqueIP(), rand()%20 + 1, 0);
+        request r(generateUniqueIP(), rand()%200 + 1, 0);
         lb.addRequest(r);
     }
 }
 
 void sendTasks(int i, int t) {
     for(int x = 0;x<i;x++) {
-        request r(generateUniqueIP(), rand()%20 + 1, t);
+        request r(generateUniqueIP(), rand()%200 + 1, t);
         lb.addRequest(r);
     }
 }
@@ -57,10 +58,18 @@ void runClock(int clockCycles) {
         }
 
         // visit all servers to check status
-        for(webserver* ws: servers) {
-            bool result = ws->checkStatus(t);
 
-            if(!result) {
+        latencies.push_back(0);
+
+        for(webserver* ws: servers) {
+            int result = ws->checkStatus(t);
+
+            if(result==0) {
+                int latency = (t-ws->getCT().timeMade)/(ws->getCT().timeToRun);
+                latencies[t] = latency;
+            }
+
+            if(result==2) {
                 // try to assign a task
 
                 if(lb.size()!=0) {
@@ -84,6 +93,23 @@ void runClock(int clockCycles) {
     }
 }
 
+void printLatencyGraph() {
+    cout << "================ printing graph ================" << endl;
+    sleep(1);
+    for(int i = 0;i<latencies.size();i++) {
+        if(latencies[i]==0) {
+            continue;
+        }
+        cout << "Cycle " << i << " ::";
+        int t = latencies[i];
+        for(int x = 0;x<t;x++) {
+            cout << "-";
+        }
+        cout << endl;
+        usleep(2500);
+    }
+}
+
 
 int main() {
 
@@ -103,7 +129,10 @@ int main() {
 
     sendTasks(20*ns);
 
-    runClock(10000);
+    runClock(5000);
+
+
+    printLatencyGraph();
 
     return 0;
 }
