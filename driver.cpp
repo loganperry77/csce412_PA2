@@ -276,6 +276,8 @@ int main() {
 
     // Generate some initial tasks and add them to the load balancer.
     sendTasks(20 * ns);
+    cout << "Queue size - " << lb.size() << endl;
+    cout << "Task runtime range " << 1 << " - " << 245  << endl;
 
     // Run the simulation for 15000 time steps, allowing up to the specified number of web servers to be created.
     runClock(10000, ns);
@@ -288,10 +290,10 @@ int main() {
     avgLat /= latencies.size();
 
     // Print out the queue size, average latency ratio, and number of web servers.
-    cout << "Queue size - " << lb.size() << ", average latency ratio - " << avgLat << endl;
+    cout << "Queue size - " << lb.size() << endl;
     cout << "Webserver list size - " << servers.size() << endl;
 
-    printServerSizeGraph(ns);
+    //printServerSizeGraph(ns);
 
     return 0;
 }
