@@ -17,6 +17,7 @@ loadbalancer lb;
 int t = 0;
 
 vector<int> latencies;
+vector<int> ssize;
 
 string generateUniqueIP() {
     // 255.255.255.255
@@ -45,21 +46,35 @@ void sendTasks(int i, int t) {
 }
 
 
-void runClock(int clockCycles) {
+void runClock(int clockCycles, int max) {
     int timeToSend = -1;
+
+    int bigBurst = -1;
+
+    srand(time(0));
+
     while(t<clockCycles) {
 
         if(t==timeToSend) {
-
             sendTasks(rand()%10, t);
-
+            timeToSend = t + rand()%50 + 1;
         } else if(t > timeToSend) {
-            timeToSend = t + rand()%10;
+            timeToSend = t + rand()%50 + 1;
+        }
+
+        if(t==bigBurst) {
+            sendTasks(rand()%1000+500, t);
+            bigBurst = t + rand()%4000 + 1;
+        } else if(t > bigBurst) {
+            bigBurst = t + rand()%4000 + 1;
         }
 
         // visit all servers to check status
 
         latencies.push_back(0);
+
+
+        
 
         for(webserver* ws: servers) {
             int result = ws->checkStatus(t);
@@ -81,7 +96,49 @@ void runClock(int clockCycles) {
                 // log the task IP/server IP, made time and start time
 
             }
+
         }
+
+        if(t%1==0) {
+
+            int diff = lb.size() - servers.size();
+
+            if(diff > 0) {
+                // add webservers
+                if(servers.size() < max) {
+                    int numToAdd = (max-servers.size())/50;
+                    if(diff < numToAdd) {
+                        numToAdd = diff;
+                    }
+                    for(int i = 0;i<numToAdd;i++) {
+                        webserver* ws = new webserver(generateUniqueIP());
+                        servers.push_back(ws);
+                    }
+                }
+            } else {
+                // delete some webservers
+                if(servers.size() > 1) {
+                    int numToSub = servers.size()-1;
+                    diff *= -1;
+                    if(diff < numToSub) {
+                        numToSub = diff;
+                    }
+                    int num = 0;
+                    for(int i = 0;i<servers.size();i++) {
+                        if(servers[i]->checkStatus(t) == 1) {
+                            continue;
+                        }
+                        num++;
+                        servers.erase(servers.begin() + i);
+                        if(num == numToSub) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        ssize.push_back(servers.size());
 
         // print out the queue size
 
@@ -96,17 +153,34 @@ void runClock(int clockCycles) {
 void printLatencyGraph() {
     cout << "================ printing graph ================" << endl;
     sleep(1);
-    for(int i = 0;i<latencies.size();i++) {
+    for(int i = 0;i<latencies.size();i+=50) {
         if(latencies[i]==0) {
             continue;
         }
         cout << "Cycle " << i << " ::";
-        int t = latencies[i];
+        int t = latencies[i]/5;
         for(int x = 0;x<t;x++) {
             cout << "-";
         }
         cout << endl;
-        usleep(2500);
+        usleep(10000);
+    }
+}
+
+void printServerSizeGraph() {
+    cout << "================ printing graph ================" << endl;
+    sleep(1);
+    for(int i = 0;i<ssize.size();i+=25) {
+        if(ssize[i]==0) {
+            continue;
+        }
+        cout << "Cycle " << i << " ::";
+        int t = ssize[i]/5;
+        for(int x = 0;x<t;x++) {
+            cout << "-";
+        }
+        cout << endl;
+        usleep(10000);
     }
 }
 
@@ -129,10 +203,20 @@ int main() {
 
     sendTasks(20*ns);
 
-    runClock(5000);
+    runClock(15000, ns);
 
+    int avgLat = 0;
 
-    printLatencyGraph();
+    for(int i = 0;i<latencies.size();i++) {
+        avgLat += latencies[i];
+    }
+    avgLat/=latencies.size();
+
+    cout << "Queue size - " << lb.size() << ", average latency ratio - " << avgLat << endl;
+    cout << "Webserver list size - " << servers.size() << endl;
+    //printLatencyGraph();
+
+    printServerSizeGraph();
 
     return 0;
 }

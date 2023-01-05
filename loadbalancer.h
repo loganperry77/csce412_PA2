@@ -6,16 +6,26 @@
 // populate the queue statically at first, and then add requests at a given frequency
 
 #include <string>
+#include <vector>
 #include <deque>
+#include <queue>
 #include "request.h"
 
 using namespace std;
+
+class comparer {
+public:
+  template<typename T>
+  bool operator()(T a, T b) {
+    return (a.timeToRun) > (b.timeToRun);
+  }
+};
 
 class loadbalancer {
 
     private:
 
-    deque<request> requests;
+    priority_queue<request, vector<request>, comparer> requests;
 
     public:
 
@@ -28,12 +38,12 @@ class loadbalancer {
     }
 
     void addRequest(request r) {
-        requests.push_back(r);
+        requests.push(r);
     }
 
     request popRequest() {
-        request r = requests.front();
-        requests.pop_front();
+        request r = requests.top();
+        requests.pop();
         return r;
     }
 
