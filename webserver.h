@@ -49,6 +49,13 @@ class webserver {
         }
     }
 
+    bool isIdle(int t) {
+        if(checkStatus(t)!=1) {
+            return true;
+        }
+        return false;
+    }
+
     string name() {
         return IP;
     }
