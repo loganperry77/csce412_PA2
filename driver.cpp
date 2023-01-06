@@ -22,6 +22,9 @@ loadbalancer lb;
 // The current time in the simulation.
 int t = 0;
 
+// The maximum runtime of a task.
+int maxRuntime = 245;
+
 // Vectors to store the latencies and size of the system at each time step.
 vector<int> latencies;
 vector<int> ssize;
@@ -52,7 +55,7 @@ string generateUniqueIP() {
  */
 void sendTasks(int i) {
     for(int x = 0; x < i; x++) {
-        request r(generateUniqueIP(), rand() % 245 + 1, 0);
+        request r(generateUniqueIP(), rand() % maxRuntime + 1, 0);
         lb.addRequest(r);
     }
 }
@@ -66,7 +69,7 @@ void sendTasks(int i) {
  */
 void sendTasks(int i, int t) {
     for(int x = 0; x < i; x++) {
-        request r(generateUniqueIP(), rand() % 245 + 1, t);
+        request r(generateUniqueIP(), rand() % maxRuntime + 1, t);
         lb.addRequest(r);
     }
 }
@@ -95,19 +98,19 @@ void runClock(int clockCycles, int max) {
     while(t < clockCycles) {
         // Send a burst of tasks at the appropriate time.
         if(t == timeToSend) {
-            sendTasks(rand() % 2, t);
+            sendTasks(rand() % 20, t);
             timeToSend = t + rand() % 10 + 1;
         } else if(t > timeToSend) {
             timeToSend = t + rand() % 10 + 1;
         }
 
         // Send a big burst of tasks at the appropriate time.
-        // if(t == bigBurst) {
-        //     sendTasks(rand() % 5000 + 500, t);
-        //     bigBurst = t + rand() % 4000 + 1;
-        // } else if(t > bigBurst) {
-        //     bigBurst = t + rand() % 4000 + 1;
-        // }
+        if(t == bigBurst) {
+            sendTasks(rand() % 5000 + 500, t);
+            bigBurst = t + rand() % 4000 + 1;
+        } else if(t > bigBurst) {
+            bigBurst = t + rand() % 4000 + 1;
+        }
 
         // Visit all servers to check their status.
 
@@ -220,7 +223,7 @@ void printLatencyGraph() {
             cout << "-";
         }
         cout << endl;
-        usleep(20000);
+        usleep(30000);
     }
 }
 
@@ -293,7 +296,7 @@ int main() {
     cout << "Queue size - " << lb.size() << endl;
     cout << "Webserver list size - " << servers.size() << endl;
 
-    //printServerSizeGraph(ns);
+    printServerSizeGraph(ns);
 
     return 0;
 }
